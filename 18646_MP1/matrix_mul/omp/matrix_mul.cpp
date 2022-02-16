@@ -33,7 +33,7 @@ namespace omp
         {
             int id = omp_get_thread_num();
             int nthrds = omp_get_num_threads();  
-            for (unsigned int i = (SEQUNTIAL*id); i < sq_dimension; i+=nthrds)
+            for (unsigned int i = (SEQUNTIAL*id); i < sq_dimension; i+=(SEQUNTIAL*nthrds))
             {
                 if (sq_dimension - i > 3)
                 {
