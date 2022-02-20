@@ -45,7 +45,7 @@ int find_nearest_cluster(int     numClusters, /* no. clusters */
                          float  *object,      /* [numCoords] */
                          float **clusters)    /* [numClusters][numCoords] */
 {
-    int   index, i;
+    int   index, i, j;
     float dist, min_dist;
 
     /* find the cluster id that has min distance to object */
@@ -53,7 +53,13 @@ int find_nearest_cluster(int     numClusters, /* no. clusters */
     min_dist = euclid_dist_2(numCoords, object, clusters[0]);
 
     for (i=1; i<numClusters; i++) {
-        dist = euclid_dist_2(numCoords, object, clusters[i]);
+        //dist = euclid_dist_2(numCoords, object, clusters[i]);
+        dist = 0.0;
+
+        #pragma unroll(4)
+        for (j=0; j<numCoords; j++)
+            dist += (object[j]-clusters[i][j]) * (object[j]-clusters[i][j]);
+
         /* no need square root */
         if (dist < min_dist) { /* find the min and its array index */
             min_dist = dist;
