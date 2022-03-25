@@ -25,11 +25,15 @@ namespace cuda
   {
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     int row = blockIdx.y * blockDim.y + threadIdx.y;
+
+    float temp_result = 0;
     
     for(int k = 0; k < sq_dimension; k++)
     {	
-	sq_matrix_result[row*sq_dimension + col] += sq_matrix_1[row * sq_dimension + k] * sq_matrix_2[k * sq_dimension + col];
+	  temp_result += sq_matrix_1[row * sq_dimension + k] * sq_matrix_2[k * sq_dimension + col];
     }
+
+    sq_matrix_result[row * sq_dimension + col] += temp_result;
   }
   
   void matrix_multiplication(float *sq_matrix_1, float *sq_matrix_2, float *sq_matrix_result, unsigned int sq_dimension)
@@ -53,8 +57,25 @@ namespace cuda
     /***************************************************
     Step 2: Invoke kernel 
     ****************************************************/
-    int blockNum = ceil(sq_dimension * 1.0 / BLOCK_WIDTH);
-    dim3 dimBlock(BLOCK_WIDTH, BLOCK_WIDTH);
+    short adjusted_block_width = 16;
+    if (sq_dimension % 15 == 0) adjusted_block_width = 15;
+    else if (sq_dimension % 14 == 0) adjusted_block_width = 14;
+    else if (sq_dimension % 13 == 0) adjusted_block_width = 13;
+    else if (sq_dimension % 12 == 0) adjusted_block_width = 12;
+    else if (sq_dimension % 11 == 0) adjusted_block_width = 11;
+    else if (sq_dimension % 10 == 0) adjusted_block_width = 10;
+    else if (sq_dimension % 9 == 0) adjusted_block_width = 9;
+    else if (sq_dimension % 8 == 0) adjusted_block_width = 8;
+    else if (sq_dimension % 7 == 0) adjusted_block_width = 7;
+    else if (sq_dimension % 6 == 0) adjusted_block_width = 6;
+    else if (sq_dimension % 5 == 0) adjusted_block_width = 5;
+    else if (sq_dimension % 4 == 0) adjusted_block_width = 4;
+    else if (sq_dimension % 3 == 0) adjusted_block_width = 3;
+    else if (sq_dimension % 2 == 0) adjusted_block_width = 2;
+    else adjusted_block_width = 1;
+
+    int blockNum = ceil(sq_dimension * 1.0 / adjusted_block_width);
+    dim3 dimBlock(adjusted_block_width, adjusted_block_width);
     dim3 dimGrid(blockNum, blockNum);
 
     matrix_mul_kernel<<<dimGrid, dimBlock>>>(sq_matrix_1_d, sq_matrix_2_d, sq_matrix_result_d, sq_dimension);
